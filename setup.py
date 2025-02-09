@@ -4,6 +4,8 @@ import subprocess
 from setuptools.command.install import install as InstallCommand
 from setuptools import setup
 
+from get_chdkptp import get_chdkptp_source
+
 CHDKPTP_PATH = os.path.abspath(os.path.join('.', 'chdkptp', 'vendor',
                                             'chdkptp'))
 CHDKPTP_PATCH = os.path.abspath(os.path.join('.', 'chdkptp_module.diff'))
@@ -17,6 +19,9 @@ class CustomInstall(InstallCommand):
                    os.path.join(CHDKPTP_PATH, 'config.mk'))
         subprocess.check_call(['make', '-C', CHDKPTP_PATH])
         InstallCommand.run(self)
+
+
+get_chdkptp_source(CHDKPTP_PATH)
 
 setup(
     name='chdkptp.py',
