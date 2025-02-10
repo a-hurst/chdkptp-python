@@ -83,3 +83,14 @@ diff --git a/include.mk b/include.mk
  LDFLAGS=
  #LD=ld
  
+--- a/misc/setup-ext-libs.bash
++++ b/misc/setup-ext-libs.bash
+@@ -534,7 +534,7 @@
+ build_lua() {
+ 	info_msg "building Lua"
+ 	change_dir "$SRC_DIR/lua-$LUA_VER"
+-	do_make build-lua.log "$LUA_TARGET"
++	do_make build-lua.log "$LUA_TARGET" MYCFLAGS=-fPIC
+ }
+ 
+ copy_built_lua() {
