@@ -10,11 +10,9 @@ except ImportError:
     from urllib2 import urlopen # Python 2
 
 
-REVISION = 664  # Version used in original submodule
+REVISION = 962  # Latest binary release
 SVN_URL_BASE = "https://app.assembla.com/spaces/chdkptp/subversion/source/"
 SVN_URL = SVN_URL_BASE + "{0}/trunk?_format=zip&format=html".format(REVISION)
-
-chdkptp_srcdir = os.path.join('chdkptp', 'vendor', 'chdkptp')
 
 
 def get_chdkptp_source(outdir):
