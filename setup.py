@@ -4,19 +4,24 @@ import subprocess
 from setuptools.command.install import install as InstallCommand
 from setuptools import setup
 
-CHDKPTP_PATH = os.path.abspath(os.path.join('.', 'chdkptp', 'vendor',
-                                            'chdkptp'))
-CHDKPTP_PATCH = os.path.abspath(os.path.join('.', 'chdkptp_module.diff'))
+from get_chdkptp import get_chdkptp_source, apply_patches, build_static_lua
+
+PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
+CHDKPTP_PATH = os.path.join(PKG_ROOT, 'chdkptp', 'vendor', 'chdkptp')
+CHDKPTP_PATCH = os.path.join(PKG_ROOT, 'chdkptp_module.diff')
 
 
 class CustomInstall(InstallCommand):
     def run(self):
-        subprocess.check_call(['patch', '-d', CHDKPTP_PATH, '-i',
-                               CHDKPTP_PATCH, '-p', '1'])
         os.symlink(os.path.join(CHDKPTP_PATH, 'config-sample-linux.mk'),
                    os.path.join(CHDKPTP_PATH, 'config.mk'))
         subprocess.check_call(['make', '-C', CHDKPTP_PATH])
         InstallCommand.run(self)
+
+
+get_chdkptp_source(CHDKPTP_PATH)
+apply_patches(CHDKPTP_PATH, CHDKPTP_PATCH)
+build_static_lua(CHDKPTP_PATH)
 
 setup(
     name='chdkptp.py',
