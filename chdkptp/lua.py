@@ -25,7 +25,7 @@ class LuaContext(object):
         inside of `pcall` and raises proper Exceptions.
     """
     def _raise_exception(self, errval):
-        if isinstance(errval, (basestring, numbers.Number)):
+        if isinstance(errval, (bytes, str, numbers.Number)):
             raise lupa.LuaError(errval)
         elif errval['etype'] == 'ptp':
             raise PTPError(errval)
@@ -85,7 +85,7 @@ class LuaContext(object):
         return self._rt.globals()
 
     def __init__(self):
-        self._rt = lupa.LuaRuntime(unpack_returned_tuples=True, encoding=None)
+        self._rt = lupa.LuaRuntime(unpack_returned_tuples=True, encoding='latin-1')
         if self.eval("type(jit) == 'table'"):
             raise RuntimeError("lupa must be linked against Lua, not LuaJIT.\n"
                                "Please install lupa with `--no-luajit`.")
@@ -146,9 +146,9 @@ LuaTable = type(global_lua.table())
 
 def parse_table(table):
     out = dict(table)
-    for key, val in out.iteritems():
+    for key, val in out.items():
         if isinstance(val, LuaTable):
             out[key] = parse_table(val)
-    if all(x.isdigit() for x in out.iterkeys()):
+    if all(x.isdigit() for x in out.keys()):
         out = tuple(out.values())
     return out

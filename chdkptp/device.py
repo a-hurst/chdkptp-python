@@ -1,6 +1,6 @@
 import os
 import re
-import StringIO
+import io
 import tempfile
 from collections import namedtuple
 from numbers import Number
@@ -179,12 +179,12 @@ class ChdkDevice(object):
         # NOTE: Because of the frequency of curly braces, we prefer old-style
         # string formatting in this case, since this saves us quite a bit of
         # escaping
-        lua_rvals, msgs = self._lua.pexecute("""
+        lua_rvals, msgs = list(self._lua.pexecute("""
             local rvals = {}
             local msgs = {}
             con:execwait([[%s]], {rets=rvals, msgs=msgs, libs=%s})
             return {rvals, msgs}
-            """ % (lua_code, remote_libs)).values()
+            """ % (lua_code, remote_libs)).values())
         if not do_return:
             return None
         return_values = []
@@ -379,7 +379,7 @@ class ChdkDevice(object):
         if scaled is None:
             scaled = (format == 'ppm')
         while True:
-            imgdata = self._lua.eval("""
+            img_str = self._lua.eval("""
                 function(skip)
                     local frame = con:get_live_data(nil, 1)
                     local pimg = liveimg.get_viewport_pimg(nil, frame, skip)
@@ -390,6 +390,7 @@ class ChdkDevice(object):
                     return header .. lb:string()
                 end
             """)(scaled)
+            imgdata = util.str_to_bytes(img_str)
             if format == 'ppm':
                 yield imgdata
             else:
@@ -399,9 +400,9 @@ class ChdkDevice(object):
                     raise RuntimeError(
                         "To convert into JPEG or PNG, please install the "
                         "`pillow` package.")
-                img = Image.open(StringIO.StringIO(imgdata))
+                img = Image.open(io.BytesIO(imgdata))
                 width, height = img.size
-                img.resize((width/2, height))
+                img.resize((int(width / 2), height))
                 imgdata = img.tobytes('PNG' if format == 'png' else 'JPEG')
                 yield imgdata
 
@@ -527,7 +528,7 @@ class ChdkDevice(object):
         # NOTE: We can't touch the chunk data from Python or else the
         # Lua runtime segfaults, so we let Lua take care of assembling
         # the output data
-        return self._lua.eval("""
+        img_str = self._lua.eval("""
             function(chunks)
                 local size = 0
                 for i, c in ipairs(chunks) do
@@ -545,6 +546,7 @@ class ChdkDevice(object):
                 return buf:string()
             end
             """)(img_data)
+        return util.str_to_bytes(img_str)
 
     def _validate_shoot_args(self, **kwargs):
         for arg in ('shutter_speed', 'real_iso', 'market_iso', 'aperture',
