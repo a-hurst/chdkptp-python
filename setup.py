@@ -1,27 +1,29 @@
 import os
-import subprocess
 
-from setuptools.command.install import install as InstallCommand
+from setuptools.command.build import build as BuildCommand
 from setuptools import setup
 
-from get_chdkptp import get_chdkptp_source, apply_patches, build_static_lua
+from get_chdkptp import (
+    get_chdkptp_source, apply_patches, build_static_lua, build_chdkptp
+)
 
 PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
 CHDKPTP_PATH = os.path.join(PKG_ROOT, 'chdkptp', 'vendor', 'chdkptp')
 CHDKPTP_PATCH = os.path.join(PKG_ROOT, 'chdkptp_module.diff')
 
 
-class CustomInstall(InstallCommand):
+class CustomBuild(BuildCommand):
+
     def run(self):
-        os.symlink(os.path.join(CHDKPTP_PATH, 'config-sample-linux.mk'),
-                   os.path.join(CHDKPTP_PATH, 'config.mk'))
-        subprocess.check_call(['make', '-C', CHDKPTP_PATH])
-        InstallCommand.run(self)
 
+        get_chdkptp_source(CHDKPTP_PATH)
+        apply_patches(CHDKPTP_PATH, CHDKPTP_PATCH)
 
-get_chdkptp_source(CHDKPTP_PATH)
-apply_patches(CHDKPTP_PATH, CHDKPTP_PATCH)
-build_static_lua(CHDKPTP_PATH)
+        build_static_lua(CHDKPTP_PATH)
+        build_chdkptp(CHDKPTP_PATH)
+
+        BuildCommand.run(self)
+
 
 setup(
     name='chdkptp.py',
@@ -32,10 +34,11 @@ setup(
     author_email="johannes.baiter@gmail.com",
     license='GPL',
     packages=['chdkptp'],
-    package_data={"chdkptp": ["vendor/chdkptp/chdkptp.so",
+    package_dir={"chdkptp": "chdkptp"},
+    package_data={"chdkptp": ["vendor/chdkptp/*.so",
                               "vendor/chdkptp/lua/*.lua"]},
     install_requires=[
         "lupa >= 1.1",
     ],
-    cmdclass={'install': CustomInstall}
+    cmdclass={'build': CustomBuild}
 )
