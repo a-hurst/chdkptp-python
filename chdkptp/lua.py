@@ -2,7 +2,9 @@ import logging
 import numbers
 import os
 
-import lupa
+import lupa as _lupa
+with _lupa.allow_lua_module_loading():
+    import lupa.lua52 as lupa
 
 CHDKPTP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'vendor', 'chdkptp')
