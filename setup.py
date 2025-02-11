@@ -1,7 +1,10 @@
 import os
 
-from setuptools.command.build import build as BuildCommand
 from setuptools import setup
+try:
+    from setuptools.command.build import build as BuildCommand
+except ImportError:
+    from distutils.command.build import build as BuildCommand
 
 from get_chdkptp import (
     get_chdkptp_source, apply_patches, build_static_lua, build_chdkptp
