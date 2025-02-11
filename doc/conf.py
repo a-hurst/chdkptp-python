@@ -14,7 +14,7 @@ class Mock(object):
 
     @classmethod
     def __getattr__(cls, name):
-        print "Getting mock: ", name
+        print("Getting mock: ", name)
         if name in ('__file__', '__path__'):
             return '/dev/null'
         elif name == 'eval':

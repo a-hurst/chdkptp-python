@@ -43,3 +43,9 @@ def build_static_lua(srcdir):
     if p.returncode != 0:
         raise RuntimeError("Error building static Lua")
     os.chdir(orig_path)
+
+
+def build_chdkptp(srcdir):
+    config_template = os.path.join(srcdir, 'config-sample-linux.mk')
+    shutil.copyfile(config_template, os.path.join(srcdir, 'config.mk'))
+    sub.check_call(['make', '-C', srcdir])

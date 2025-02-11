@@ -1,2 +1,3 @@
 include chdkptp_module.diff
+include get_chdkptp.py
 graft chdkptp/vendor

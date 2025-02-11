@@ -1,7 +1,14 @@
 import os
+import sys
 
 from chdkptp.lua import global_lua
 
+
+def str_to_bytes(x, enc='latin-1'):
+    if sys.version_info[0] > 2:
+        return x.encode(enc)
+    else:
+        return bytes(x)
 
 def iso_to_sv96(iso):
     return global_lua.globals.exposure.iso_to_sv96(iso)
