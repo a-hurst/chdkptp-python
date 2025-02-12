@@ -1,0 +1,36 @@
+Modifies the chdkptp source code to create an entry point for loading as a
+module in Lua (luaopen_chdkptp) and moves some init code to this function
+from main() so chdkptp is properly initialized when loaded from Lua.
+
+--- a/chdkptp.c
++++ b/chdkptp.c
+@@ -2579,7 +2579,12 @@ static const luaL_Reg lua_errlib[] = {
+ };
+ 
+ 
+-static int chdkptp_registerlibs(lua_State *L) {
++int luaopen_chdkptp(lua_State *L) {
++	init_timing();
++	usb_init();
++	luaopen_lfs(L);
++	luaopen_lbuf(L);
++	luaopen_rawimg(L);
+ 	/* set up meta table for error object */
+ 	luaL_newmetatable(L,CHDK_API_ERROR_META);
+ 	lua_pushcfunction(L,api_error_tostring);
+@@ -2648,14 +2653,9 @@ int main(int argc, char ** argv)
+ 	g_argv = argv;
+ 	/* register signal handlers */
+ //	signal(SIGINT, ptpcam_siginthandler);
+-	init_timing();
+-	usb_init();
+ 	lua_State *L = luaL_newstate();
+ 	luaL_openlibs(L);
+-	luaopen_lfs(L);
+-	luaopen_lbuf(L);
+-	luaopen_rawimg(L);	
+-	chdkptp_registerlibs(L);
++	luaopen_chdkptp(L);
+ 	int r=exec_lua_string(L,"require('main')");
+ 	uninit_gui_libs(L);
+ 	lua_close(L);

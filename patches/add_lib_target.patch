@@ -1,0 +1,25 @@
+Modifies the chdkptp Makefile to allow building as a shared library.
+
+--- a/Makefile
++++ b/Makefile
+@@ -128,14 +128,19 @@ SUBDIRS+=lua-signal
+ endif
+ 
+ CHDKPTP_EXE=chdkptp$(EXE_EXTRA)$(EXE)
++CHDKPTP_LIB=chdkptp$(EXE_EXTRA)$(LIB)
+ 
+ EXES=$(CHDKPTP_EXE)
++LIBS=$(CHDKPTP_LIB)
+ 
+-all: $(EXES)
++all: $(EXES) $(LIBS)
+ 
+ SRCS=properties.c ptp.c chdkptp.c lbuf.c liveimg.c rawimg.c luautil.c $(PTPIP_SRCS)
+ OBJS=$(SRCS:.c=.o)
+ 
++$(CHDKPTP_LIB): $(OBJS)
++	$(CC) -shared -o $@ lfs/lfs.o $^ $(LDFLAGS)
++
+ $(CHDKPTP_EXE): $(OBJS)
+ 	$(CC) -o $@ lfs/lfs.o $^ $(LDFLAGS)
+ 
