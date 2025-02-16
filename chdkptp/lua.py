@@ -4,7 +4,7 @@ import os
 
 import lupa as _lupa
 with _lupa.allow_lua_module_loading():
-    import lupa.lua52 as lupa
+    import lupa.lua53 as lupa
 
 CHDKPTP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'vendor', 'chdkptp')
@@ -88,9 +88,6 @@ class LuaContext(object):
 
     def __init__(self):
         self._rt = lupa.LuaRuntime(unpack_returned_tuples=True, encoding='latin-1')
-        if self.eval("type(jit) == 'table'"):
-            raise RuntimeError("lupa must be linked against Lua, not LuaJIT.\n"
-                               "Please install lupa with `--no-luajit`.")
         self._setup_runtime()
 
     def _setup_runtime(self):
@@ -106,17 +103,24 @@ class LuaContext(object):
             require('chdkptp')
             util = require('util')
             util:import()
+            ticktime = require('ticktime')
+            timeutil = require('timeutil')
+            prefs = require('prefs')
+            fsutil = require('fsutil')
             varsubst = require('varsubst')
+            lvutil = require('lvutil')
+            ptp = require('ptpcodes')
             chdku = require('chdku')
             exposure = require('exposure')
             dng = require('dng')
-            prefs = require('prefs')
-            fsutil = require('fsutil')
-        """.format(CHDKPTP_PATH))
+            chdkmenuscript = require('chdkmenuscript')
+            anyfs = require('anyfs')
+        """)
 
         # Enable debug logging
+        # TODO: Make the logging level (0, 1, or 2) configurable
         self._rt.execute("""
-            prefs._set('cli_verbose', 2)
+            prefs._add('cli_verbose', 'number', '', 2)
         """)
 
         # Register loggers
