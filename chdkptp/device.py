@@ -501,19 +501,11 @@ class ChdkDevice(object):
             rcopts['raw'] = self._lua.eval("""
                 function(dng_info, img_data)
                     return function(lcon, hdata)
-                        local status, raw = lcon:capture_get_chunk_pcall(
-                            hdata.id)
-                        if not status then
-                            return false, raw
-                        end
+                        local raw = lcon:capture_get_chunk(hdata.id)
                         table.insert(img_data, {data=dng_info.hdr})
-                        local status, err = chdku.rc_process_dng(dng_info,
-                                                                raw)
-                        if status then
-                            table.insert(img_data, {data=dng_info.thumb})
-                            table.insert(img_data, raw)
-                        end
-                        return status, err
+                        chdku.rc_process_dng(dng_info, raw)
+                        table.insert(img_data, {data=dng_info.thumb})
+                        table.insert(img_data, raw)
                     end
                 end
                 """)(dng_info, img_data)
@@ -534,6 +526,9 @@ class ChdkDevice(object):
             function(chunks)
                 local size = 0
                 for i, c in ipairs(chunks) do
+                    if c.size == nil then
+                        c['size'] = c.data:len()
+                    end
                     size = size + c.size
                 end
                 local buf = lbuf.new(size)
