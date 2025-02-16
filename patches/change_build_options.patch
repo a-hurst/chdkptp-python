@@ -1,0 +1,39 @@
+Patches a secondary makefile to:
+ - Specify file extensions for built shared libs
+ - Add CFLAGS for shared library support (-fPIC) and debug symbols (-g)
+
+--- a/include.mk
++++ b/include.mk
+@@ -9,6 +9,7 @@
+ OSTYPE=Windows
+ EXE=.exe
+ DLL=.dll
++LIB=.dll
+ # Note may be freetype or freetype6 depending on CD version, zlib requried for 5.5 and later
+ CD_FREETYPE_LIB=freetype6 z
+ #CD_FREETYPE_LIB=freetype z
+@@ -17,6 +18,7 @@
+ OSTYPE=Linux
+ EXE=
+ DLL=.so
++LIB=.so
+ CD_FREETYPE_LIB=freetype z
+ endif
+ ifeq ($(HOSTPLATFORM),Darwin)
+@@ -24,6 +26,7 @@
+ EXE=
+ # TODO .dylib? only used for signal
+ DLL=.so
++LIB=.so
+ # TODO?
+ CD_FREETYPE_LIB=freetype z
+ endif
+@@ -32,7 +35,7 @@
+ EXE_EXTRA=
+ 
+ CC=gcc
+-CFLAGS=-DCHDKPTP_OSTYPE=\"$(OSTYPE)\" -Wall
++CFLAGS=-DCHDKPTP_OSTYPE=\"$(OSTYPE)\" -Wall -fPIC -g
+ LDFLAGS=
+ #LD=ld
+ 

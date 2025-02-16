@@ -1,0 +1,45 @@
+Modifies the chdkptp source code to create an entry point for loading as a
+module in Lua (luaopen_chdkptp) and moves some init code to this function
+from main() so chdkptp is properly initialized when loaded from Lua.
+
+--- a/chdkptp.c
++++ b/chdkptp.c
+@@ -2805,7 +2805,14 @@
+   {NULL, NULL}
+ };
+ 
+-static int chdkptp_registerlibs(lua_State *L) {
++int luaopen_chdkptp(lua_State *L) {
++	usb_init();
++	luaopen_lsyslib(L);
++	lsyslib_init_timing();
++	luaopen_lfs(L);
++	luaopen_lerrlib(L);
++	luaopen_lbuf(L);
++	luaopen_rawimg(L);
+ 	/* set up meta table for connection object */
+ 	luaL_newmetatable(L,CHDK_CONNECTION_META);
+ 	lua_pushcfunction(L,chdk_connection_gc);
+@@ -2858,20 +2865,13 @@
+ {
+ 	/* register signal handlers */
+ //	signal(SIGINT, ptpcam_siginthandler);
+-	usb_init();
+ 	lua_State *L = luaL_newstate();
+ 	luaL_openlibs(L);
+-	luaopen_lsyslib(L);
+-	lsyslib_init_timing();
+-	lsyslib_init_args(argc,argv);
+-	luaopen_lfs(L);
+-	luaopen_lerrlib(L);
+-	luaopen_lbuf(L);
+-	luaopen_rawimg(L);
+ #ifdef CHDKPTP_READLINE
+ 	luaopen_lreadline(L);
+ #endif
+-	chdkptp_registerlibs(L);
++	luaopen_chdkptp(L);
++	lsyslib_init_args(argc,argv);
+ 	int r=exec_lua_string(L,"require('main')");
+ 	uninit_gui_libs(L);
+ 	lua_close(L);

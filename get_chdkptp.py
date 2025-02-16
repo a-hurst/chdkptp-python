@@ -12,7 +12,7 @@ except ImportError:
     from urllib2 import urlopen # Python 2
 
 
-REVISION = 962  # Latest binary release
+REVISION = 1514  # Latest SVN version as of Feb 12, 2025
 SVN_URL_BASE = "https://app.assembla.com/spaces/chdkptp/subversion/source/"
 SVN_URL = SVN_URL_BASE + "{0}/trunk?_format=zip&format=html".format(REVISION)
 
@@ -29,8 +29,15 @@ def get_chdkptp_source(outdir):
         z.extractall(path=outdir)
 
 
-def apply_patches(srcdir, patchfile):
-    sub.check_call(['patch', '-d', srcdir, '-i', patchfile, '-p', '1'])
+def apply_patches(srcdir, patchdir):
+    cmd_base = ['patch', '-d', srcdir, '-i']
+    print("")
+    for patchfile in os.listdir(patchdir):
+        if patchfile.endswith('.patch'):
+            print("* Applying {0}...".format(patchfile))
+            patch_path = os.path.join(patchdir, patchfile)
+            sub.check_call(cmd_base + [patch_path, '-p', '1'])
+            print("")
 
 
 def build_static_lua(srcdir):

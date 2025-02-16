@@ -1,0 +1,13 @@
+Ensures Lua is built with PIC enabled so the chdkptp library can link to it.
+
+--- a/misc/setup-ext-libs.bash
++++ b/misc/setup-ext-libs.bash
+@@ -592,7 +592,7 @@
+ build_lua() {
+ 	info_msg "building Lua"
+ 	change_dir "$SRC_DIR/lua-$LUA_VER"
+-	do_make build-lua.log "$LUA_TARGET"
++	do_make build-lua.log "$LUA_TARGET" MYCFLAGS=-fPIC
+ }
+ 
+ copy_built_lua() {

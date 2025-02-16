@@ -312,15 +312,17 @@ class ChdkDevice(object):
         :return:            All files and directories in the path
         """
         remote_path = util.to_camerapath(remote_path)
-        flist = self._lua.call("con:listdir", remote_path, dirsonly=False,
-                               stat="*" if detailed else "/")
-        if not detailed:
-            return [os.path.join(remote_path, p) for p in flist.values()]
+        if detailed:
+            lst = self._lua.call("con:listdir", remote_path, dirsonly=False, stat="*")
+            files = []
+            for item in lst.values():
+                filepath = os.path.join(remote_path, item['name'])
+                fileinfo = {k: v for k, v in item.items() if k != 'name'}
+                files.append((filepath, fileinfo))
         else:
-            return [tuple(os.path.join(remote_path,
-                                       dict(info.items())['name']),
-                          {k: v for k, v in info.items() if k != 'name'})
-                    for info in flist.values()]
+            lst = self._lua.call("con:listdir", remote_path, dirsonly=False, stat="/")
+            files = [os.path.join(remote_path, p) for p in lst.values()]
+        return files
 
     def mkdir(self, remote_path):
         """ Create a directory on the device.
@@ -499,19 +501,11 @@ class ChdkDevice(object):
             rcopts['raw'] = self._lua.eval("""
                 function(dng_info, img_data)
                     return function(lcon, hdata)
-                        local status, raw = lcon:capture_get_chunk_pcall(
-                            hdata.id)
-                        if not status then
-                            return false, raw
-                        end
+                        local raw = lcon:capture_get_chunk(hdata.id)
                         table.insert(img_data, {data=dng_info.hdr})
-                        local status, err = chdku.rc_process_dng(dng_info,
-                                                                raw)
-                        if status then
-                            table.insert(img_data, {data=dng_info.thumb})
-                            table.insert(img_data, raw)
-                        end
-                        return status, err
+                        chdku.rc_process_dng(dng_info, raw)
+                        table.insert(img_data, {data=dng_info.thumb})
+                        table.insert(img_data, raw)
                     end
                 end
                 """)(dng_info, img_data)
@@ -532,6 +526,9 @@ class ChdkDevice(object):
             function(chunks)
                 local size = 0
                 for i, c in ipairs(chunks) do
+                    if c.size == nil then
+                        c['size'] = c.data:len()
+                    end
                     size = size + c.size
                 end
                 local buf = lbuf.new(size)

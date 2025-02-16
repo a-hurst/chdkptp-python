@@ -12,7 +12,7 @@ from get_chdkptp import (
 
 PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
 CHDKPTP_PATH = os.path.join(PKG_ROOT, 'chdkptp', 'vendor', 'chdkptp')
-CHDKPTP_PATCH = os.path.join(PKG_ROOT, 'chdkptp_module.diff')
+CHDKPTP_PATCHDIR = os.path.join(PKG_ROOT, 'patches')
 
 
 class CustomBuild(BuildCommand):
@@ -20,7 +20,7 @@ class CustomBuild(BuildCommand):
     def run(self):
 
         get_chdkptp_source(CHDKPTP_PATH)
-        apply_patches(CHDKPTP_PATH, CHDKPTP_PATCH)
+        apply_patches(CHDKPTP_PATH, CHDKPTP_PATCHDIR)
 
         build_static_lua(CHDKPTP_PATH)
         build_chdkptp(CHDKPTP_PATH)
